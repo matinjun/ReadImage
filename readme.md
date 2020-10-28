@@ -1,20 +1,17 @@
-# ��ʵ��ʵ���˶�ȡ��άģ�͵Ĺ��ܣ���������һЩ�Զ���ת����
-## ��ȡoff��ʽ��άģ�ͣ����丳ɫ
-
-	- ����ʵ��2.2��ʵ�ֶ���άģ�͵Ķ�ȡ�������϶��ص���ɫ
-		* ������һ��readoff��������ʵ�ֶ�ȡ����Ķ���λ�ã��Լ�ƬԪ����
-		* �޸���ɫ
-			- ��Ҫ�޸�vshader.glsl�ļ�������������һ��vColor
-			- �޸�init
-				- ����һ��colors�������洢ÿ���������ɫ
-				- ʹ��glBufferSubData���ֲ���ʼ�����㻺�����
-				- ����һ����ƬԪ��ɫ���г�ʼ���������ɫ
-
-## ���������ͼ��̵Ľ��������ƶ���Ч��
-
-	- ����һ�����ص�����mouse
-	- ����һ��currentXias������ȷ����ǰ�Ƶ��ᣬĬ��Ϊx
-	- ����һ��Ĭ�ϻص�����idleFunc
-	- �޸Ĳ˵�
-		* ���Ӹ���ѡ��ROTATE-X, ROTATE-Y, ROTATE-Z
-		* �޸�menuEvents�������Ա�Բ�ͬ��ѡ��������ͬ�ĵı仯
+# 本实验实现了读取三维模型的功能，并增加了一些自动旋转功能
+## 读取off格式三维模型，对其赋色
+    - 参照实验2.2，实现对三维模型的读取，并赋上独特的颜色
+        * 增添了一个readoff函数，以实现读取物体的顶点位置，以及片元索引
+        * 修改颜色
+            - 需要修改vshader.glsl文件，在里面添加一个vColor
+            - 修改init
+                - 增加一个colors变量来存储每个顶点的颜色
+                - 使用glBufferSubData来分步初始化顶点缓存对象
+                - 增加一个从片元着色器中初始化顶点的颜色
+## 并利用鼠标和键盘的交互，控制动画效果
+    - 添加一个鼠标回调函数mouse
+    - 添加一个currentXias变量来确定当前绕的轴，默认为x
+    - 添加一个默认回调函数idleFunc
+    - 修改菜单
+        * 添加更多选项ROTATE-X, ROTATE-Y, ROTATE-Z
+        * 修改menuEvents函数，以便对不同的选择做出不同的的变化
