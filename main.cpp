@@ -43,6 +43,7 @@ std::vector<vec3> vertices;
 // 物体的各个点颜色
 std::vector<vec3> colors;
 
+// 通过文件读取物体的顶点位置，及片元索引
 void read_off(const std::string filename)
 {
 	if (filename.empty()) {
@@ -75,14 +76,13 @@ void read_off(const std::string filename)
 	fin.close();
 }
 
-// 立方体生成12个三角形的顶点索引
+// 生成每个顶点的位置，颜色，索引
 void generateCube()
 {
 	vertices.clear();
 	faces.clear();
 	colors.clear();
-    // @TODO: 修改此函数，构建立方体的各个面
-	// 按顶点连接次序给出，如第一个面：
+    
 	read_off("cow.off");
 	for (int i = 0; i < n_vertices; ++i) {
 		colors.push_back(vec3(0.0, 1.0, 0.0)); // 每个点设置成绿色
@@ -102,8 +102,12 @@ void init()
 	GLuint buffer;
 	glGenBuffers(1, &buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ARRAY_BUFFER, n_vertices * sizeof(vec3), vertices.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec3) + colors.size() * sizeof(vec3), NULL, GL_STATIC_DRAW);
 
+	// 分别用输入顶点及颜色信息
+	glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(vec3), vertices.data());
+	glBufferSubData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec3), colors.size() * sizeof(vec3), colors.data());
+	
     // 创建并初始化顶点索引缓存对象
     GLuint vertexIndexBuffer;
     glGenBuffers(1, &vertexIndexBuffer);
@@ -118,6 +122,11 @@ void init()
 	GLuint pLocation = glGetAttribLocation(program, "vPosition");
 	glEnableVertexAttribArray(pLocation);
 	glVertexAttribPointer(pLocation, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+
+	// 从片元着色器中初始化顶点的颜色
+	GLuint cLocation = glGetAttribLocation(program, "vColor");
+	glEnableVertexAttribArray(cLocation);
+	glVertexAttribPointer(cLocation, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(vertices.size() * sizeof(vec3)));
 
 	// 获得矩阵存储位置
 	matrixLocation = glGetUniformLocation(program, "matrix");
