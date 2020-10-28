@@ -19,6 +19,9 @@ const int Z_AXIS = 2;
 const int TRANSFORM_SCALE = 0;
 const int TRANSFORM_ROTATE = 1;
 const int TRANSFORM_TRANSLATE = 2;
+const int ROTATE_X = 3;
+const int ROTATE_Y = 4;
+const int ROTATE_Z = 5;
 
 const double DELTA_DELTA = 0.1;    // Delta的变化率
 const double DEFAULT_DELTA = 0.3;    // 默认的Delta值
@@ -35,6 +38,7 @@ GLint matrixLocation;
 int currentTransform = TRANSFORM_TRANSLATE;    // 设置当前变换
 int mainWindow;
 int n_vertices;
+int currentAxis = X_AXIS;	// 设置当前绕的轴
 
 std::vector<vec3i> faces;
 
@@ -149,21 +153,6 @@ void display()
     // @TODO: 在此处修改函数，根据scaleTheta，rotateTheta，translateTheta，计算变换矩阵
 	// 可使用Scale(),Translate(),RotateX(),RotateY(),RotateZ()等函数。函数定义在mat.h
 	m = Translate(translateTheta) * RotateZ(rotateTheta.z) * RotateY(rotateTheta.y) * RotateX(rotateTheta.x) * Scale(scaleTheta);
-#if 0
-	switch (currentTransform) {
-	case TRANSFORM_SCALE:
-		m *= Scale(scaleTheta);
-		break;
-	case TRANSFORM_ROTATE:
-		m *= RotateX(rotateTheta.x);
-		m *= RotateY(rotateTheta.y);
-		m *= RotateZ(rotateTheta.z);
-		break;
-	case TRANSFORM_TRANSLATE:
-		m *= Translate(translateTheta);
-		break;
-	}
-#endif
 	
 	
 	// 从指定位置matrixLocation中传入变换矩阵m
@@ -216,6 +205,14 @@ void updateDelta(int sign)
 	}
 }
 
+// 空闲回调函数，实现绕某个轴旋转
+void idleFunction() {
+	// 改变旋转的角度
+	rotateTheta[currentAxis] += rotateDelta;
+	// 重新绘制
+	glutPostWindowRedisplay(mainWindow);
+}
+
 void keyboard(unsigned char key, int x, int y)
 {
 	switch (key) {
@@ -254,9 +251,25 @@ void keyboard(unsigned char key, int x, int y)
 	glutPostWindowRedisplay(mainWindow);
 }
 
+// 鼠标回调事件
+void mouse(int button, int state, int x, int y) {
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		glutIdleFunc(idleFunction);
+	}
+	else if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
+		glutIdleFunc(NULL);
+	}
+}
+
 void menuEvents(int menuChoice)
 {
-	currentTransform = menuChoice;
+	if (menuChoice < ROTATE_X) {
+		currentTransform = menuChoice;
+	}
+	else {
+		// 选择绕某一轴旋转
+		currentAxis = menuChoice - ROTATE_X;
+	}	
 }
 
 void setupMenu()
@@ -265,6 +278,11 @@ void setupMenu()
 	glutAddMenuEntry("Scale", TRANSFORM_SCALE);
 	glutAddMenuEntry("Rotate", TRANSFORM_ROTATE);
 	glutAddMenuEntry("Translate", TRANSFORM_TRANSLATE);
+	// 添加绕某一个轴旋转
+	glutAddMenuEntry("Rotate-X", ROTATE_X);
+	glutAddMenuEntry("Rotate-Y", ROTATE_Y);
+	glutAddMenuEntry("Rotate-Z", ROTATE_Z);
+
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
@@ -297,6 +315,7 @@ int main(int argc, char **argv)
 	setupMenu();
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyboard);
+	glutMouseFunc(mouse);
 	// 输出帮助信息
 	printHelp();
 	// 启用深度测试
